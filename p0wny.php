@@ -119,6 +119,22 @@ if (isset($_GET["feature"])) {
                 font-family: monospace;
             }
 
+            *::-webkit-scrollbar-track {
+                border-radius: 8px;
+                background-color: #353535;
+            }
+
+            *::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            *::-webkit-scrollbar-thumb {
+                border-radius: 8px;
+                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+                background-color: #bcbcbc;
+            }
+
             #shell {
                 background: #222;
                 max-width: 800px;
@@ -146,7 +162,8 @@ if (isset($_GET["feature"])) {
 
             @media (max-width: 991px) {
                 #shell-logo {
-                    display: none;
+                    font-size: 6px;
+                    margin: -25px 0;
                 }
 
                 html, body, #shell {
@@ -163,6 +180,12 @@ if (isset($_GET["feature"])) {
             @media (max-width: 767px) {
                 #shell-input {
                     flex-direction: column;
+                }
+            }
+
+            @media (max-width: 320px) {
+                #shell-logo {
+                    font-size: 5px;
                 }
             }
 
@@ -229,6 +252,10 @@ if (isset($_GET["feature"])) {
             function _insertStdout(stdout) {
                 eShellContent.innerHTML += escapeHtml(stdout);
                 eShellContent.scrollTop = eShellContent.scrollHeight;
+            }
+
+            function _defer(callback) {
+                setTimeout(callback, 0);
             }
 
             function featureShell(command) {
@@ -372,8 +399,10 @@ if (isset($_GET["feature"])) {
                         if (historyPosition > 0) {
                             historyPosition--;
                             eShellCmdInput.blur();
-                            eShellCmdInput.focus();
                             eShellCmdInput.value = commandHistory[historyPosition];
+                            _defer(function() {
+                                eShellCmdInput.focus();
+                            });
                         }
                         break;
                     case "ArrowDown":
@@ -426,6 +455,20 @@ if (isset($_GET["feature"])) {
                 };
                 xhr.send(getQueryString());
             }
+
+            document.onclick = function(event) {
+                event = event || window.event;
+                var selection = window.getSelection();
+                var target = event.target || event.srcElement;
+
+                if (target.tagName === "SELECT") {
+                    return;
+                }
+
+                if (!selection.toString()) {
+                    eShellCmdInput.focus();
+                }
+            };
 
             window.onload = function() {
                 eShellCmdInput = document.getElementById("shell-cmd");
